@@ -3,6 +3,23 @@ const ctx = canvas.getContext("2d");
 
 canvas.width=800;
 canvas.height=1000;
+canvas.addEventListener("click", function(e) {
+
+  // If a gun is available, shoot
+  if(cardFigure && cardFigure.showGun) {
+
+    shoot(
+      cardFigure,
+      e.offsetX,
+      e.offsetY
+    );
+
+  } else {
+
+    // Otherwise go to next turn
+    nextTurn();
+  }
+});
 
 // Buttons
 const playBtn = document.getElementById("playBtn");
@@ -704,6 +721,12 @@ function gameLoop() {
   }
 
   requestAnimationFrame(gameLoop);
+}
+function nextTurn() {
+  if(gameStarted && !gameOver) {
+    waitingForChoice = false;
+    addRandomPart();
+  }
 }
 
 gameLoop();
