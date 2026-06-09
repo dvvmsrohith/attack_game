@@ -1,0 +1,99 @@
+body{
+    margin:0;
+    overflow:auto;
+
+    display:flex;
+    justify-content:center;
+
+    background: linear-gradient(
+        135deg,
+        #0f172a,
+        #1e293b,
+        #334155
+    );
+
+    font-family:Arial,sans-serif;
+}
+
+/* Game Canvas */
+canvas{
+    background: linear-gradient(
+        to top,
+        #d9f99d,
+        #86efac
+    );
+
+    border:10px solid #0f172a;
+    border-radius:20px;
+
+    box-shadow:
+        0 20px 25px rgba(0,0,0,0.5),
+        0 0 60px rgba(59,130,246,0.4);
+
+    margin-top:20px;
+
+    display:block;
+}
+
+/* Buttons */
+button{
+    position:absolute;
+
+    padding:14px 30px;
+
+    font-size:22px;
+    font-weight:bold;
+
+    border:none;
+    border-radius:15px;
+
+    cursor:pointer;
+
+    color:white;
+
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s,
+        opacity 0.2s;
+}
+
+/* Play Button */
+#playBtn{
+    top:45%;
+
+    background: linear-gradient(
+        to right,
+        #22c55e,
+        #16a34a
+    );
+
+    box-shadow:
+        0 0 15px rgba(34,197,94,0.7);
+}
+
+/* Restart Button */
+#restartBtn{
+    top:35%;
+
+    background: linear-gradient(
+        to right,
+        #ef4444,
+        #b91c1c
+    );
+
+    box-shadow:
+        0 0 15px rgba(239,68,68,0.7);
+}
+
+/* Hover Effect */
+button:hover{
+    transform:scale(1.08);
+
+    box-shadow:
+        0 0 25px rgba(255,255,255,0.5);
+}
+
+/* Click Effect */
+button:active{
+    transform:scale(0.95);
+}

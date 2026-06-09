@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stick Figure Game</title>
+
+  <link rel="stylesheet" href="attack_game.css">
+
+  <style>
+
+    /* Loading Screen */
+    #loadingScreen{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:#111;
+      display:none;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      z-index:9999;
+    }
+    /* Stick Figure */
+    .stickman{
+      position:relative;
+      width:120px;
+      height:250px;
+    }
+
+    .part{
+      position:absolute;
+      background:white;
+      opacity:0;
+      animation:appear 0.5s forwards;
+    }
+
+    /* Head */
+    .head{
+      width:50px;
+      height:50px;
+      border:6px solid white;
+      border-radius:50%;
+      background:transparent;
+      left:35px;
+      top:0;
+      animation-delay:0s;
+    }
+
+    /* Body */
+    .body{
+      width:6px;
+      height:80px;
+      left:57px;
+      top:60px;
+      animation-delay:0.5s;
+    }
+
+    /* Left Arm */
+    .leftArm{
+      width:55px;
+      height:6px;
+      left:10px;
+      top:75px;
+      transform:rotate(200deg);
+      transform-origin:right center;
+      animation-delay:1s;
+    }
+
+    /* Right Arm */
+    .rightArm{
+      width:55px;
+      height:6px;
+      left:57px;
+      top:75px;
+      transform:rotate(-200deg);
+      transform-origin:left center;
+      animation-delay:1.5s;
+    }
+
+    /* Left Leg */
+    .leftLeg{
+      width:70px;
+      height:6px;
+      left:25px;
+      top:175px;
+      transform:rotate(60deg);
+      transform-origin:right center;
+      animation-delay:2s;
+    }
+
+    /* Right Leg */
+    .rightLeg{
+      width:70px;
+      height:9px;
+      left:25px;
+      top:175px;
+      transform:rotate(-60deg);
+      transform-origin:left center;
+      animation-delay:2.5s;
+    }
+
+    #loadingText{
+      color:white;
+      margin-top:20px;
+      font-size:24px;
+      font-family:Arial;
+    }
+
+    @keyframes appear{
+  from{
+    opacity:0;
+    
+  }
+  to{
+    opacity:1;
+    
+  }
+}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen">
+
+    <div class="stickman">
+
+      <div class="part head"></div>
+
+      <div class="part body"></div>
+
+      <div class="part leftArm"></div>
+
+      <div class="part rightArm"></div>
+
+      <div class="part leftLeg"></div>
+
+      <div class="part rightLeg"></div>
+
+    </div>
+
+    <div id="loadingText">
+      Loading Game...
+    </div>
+
+  </div>
+
+  <!-- Buttons -->
+  <button id="playBtn">Play Game</button>
+
+  <button id="restartBtn">Restart Game</button>
+
+  <!-- Canvas -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- JavaScript -->
+  <script src="attack_game.js"></script>
+
+  <script>
+
+    const playBtn = document.getElementById("playBtn");
+    const loadingScreen = document.getElementById("loadingScreen");
+
+    playBtn.addEventListener("click", function(){
+
+      // Show loading
+      loadingScreen.style.display = "flex";
+
+      // Hide loading after 3 seconds
+      setTimeout(function(){
+
+        loadingScreen.style.display = "none";
+
+        // Start your game here
+        console.log("Game Started");
+
+      }, 3000);
+
+    });
+
+  </script>
+
+</body>
+</html>
