@@ -3,27 +3,156 @@ const ctx = canvas.getContext("2d");
 
 canvas.width=800;
 canvas.height=1000;
+
+
+let selectedInfo = null;
+let infoTimer = 0;
+
+canvas.addEventListener("mousemove", function(e){
+
+    const mx = e.offsetX;
+    const my = e.offsetY;
+
+    hoveredFigure = null;
+
+    for(let f of figures){
+
+        const numberX = f.x - 70;
+        const numberY = f.y;
+
+        if(
+            mx >= numberX - 15 &&
+            mx <= numberX + 15 &&
+            my >= numberY - 20 &&
+            my <= numberY + 20
+        ){
+            selectedInfo = f;
+            infoTimer = Date.now();
+            return;
+        }
+    }
+
+    selectedInfo = null;
+});
 canvas.addEventListener("click", function(e) {
 
-  // If a gun is available, shoot
-  if(cardFigure && cardFigure.showGun) {
+    const mx = e.offsetX;
+    const my = e.offsetY;
 
-    shoot(
-      cardFigure,
-      e.offsetX,
-      e.offsetY
-    );
+    // White box area
+    if (
+        cardVisible &&
+        !waitingForChoice &&
+        mx >= 250 &&
+        mx <= 550 &&
+        my >= 280 &&
+        my <= 500
+    ) {
+        nextTurn();   // Change figure
+        return;
+    }
 
-  } else {
-
-    // Otherwise go to next turn
-    nextTurn();
-  }
+    // Outside white box = shoot
+    if (
+        cardFigure &&
+        cardFigure.showGun &&
+        cardFigure.magazine > 0
+    ) {
+        shoot(cardFigure, mx, my);
+    }
 });
+
 
 // Buttons
 const playBtn = document.getElementById("playBtn");
 const restartBtn = document.getElementById("restartBtn");
+
+const rewardBtn = document.getElementById("rewardBtn");
+const shieldBtn = document.getElementById("shieldBtn");
+
+const closePopup =
+document.getElementById("closePopup");
+
+closePopup.addEventListener("click", () => {
+
+    document.getElementById("gunPopup").style.display = "none";
+
+    waitingForChoice = false;
+
+});
+let deadFigureMessage = false;
+let deadFigureNumber = null;
+function drawDeathPopup() {
+
+    if(!deadFigureMessage) return;
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(250, 350, 300, 150);
+
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(250, 350, 300, 150);
+
+    ctx.fillStyle = "red";
+    ctx.font = "30px Arial";
+    ctx.textAlign = "center";
+
+    ctx.fillText(
+        "Figure " + deadFigureNumber + " Died!",
+        400,
+        410
+    );
+
+    ctx.fillStyle = "blue";
+    ctx.fillText("Click Here", 400, 460);
+
+    ctx.textAlign = "start";
+}
+
+// Show button when player gets reward
+function showRewardButton() {
+
+    document.getElementById("gunPopup").style.display = "block";
+
+    if(cardFigure.showGun){
+        rewardBtn.textContent = "Get Magazine";
+    }else{
+        rewardBtn.textContent = "Get Gun";
+    }
+}
+
+// When button is clicked
+rewardBtn.addEventListener("click", () => {
+
+    if(cardFigure){
+
+        if(cardFigure.showGun){
+
+            cardFigure.magazine += 2;
+            console.log("Ammo:", cardFigure.magazine);
+
+        } else {
+
+            cardFigure.showGun = true;
+            cardFigure.magazine = 0;
+        }
+    }
+    document.getElementById("gunPopup").style.display = "none";
+
+    waitingForChoice = false;
+
+});
+shieldBtn.addEventListener("click", () => {
+
+    if(cardFigure){
+
+        cardFigure.showShield = true;
+        cardFigure.shieldHealth += 50;
+    }
+
+    document.getElementById("gunPopup").style.display = "none";
+
+    waitingForChoice = false;
+});
 
 // Loading screen
 const loadingScreen =
@@ -33,28 +162,8 @@ document.getElementById("loadingScreen");
 let gameStarted = false;
 let gameOver = false;
 
-canvas.addEventListener("click", function(e) {
-
-  if (!cardFigure || !cardFigure.showGun) {
-    return;
-  }
-
-  shoot(
-    cardFigure,
-    e.offsetX,
-    e.offsetY
-  );
-});
-
-
 // Selected figure number
-
 let cardFigure  = null;
-// Flip animation
-let flipAngle = 0;
-let flipping = false;
-let pageTurn=0;
-
 // bullet 
 let bullets = [];
 
@@ -127,9 +236,6 @@ restartBtn.addEventListener("click", function() {
 
     // gun magazine
     f.magazine = 0;
-    f.maxMagazine = 2;
-
-    // IMPORTANT
     f.magazineLevel = 0;
   });
 
@@ -169,7 +275,6 @@ figures.forEach(f => {
   f.shieldHealth = 0;
   //gun magazine
   f.magazine = 0 ;
-  f.maxMagazine = 2;
 
 });
 
@@ -181,11 +286,6 @@ function drawStickFigure(f) {
   let y = f.y;
 
   ctx.lineWidth = 3;
-
-  // Health text
-  ctx.font = "17px Arial";
-  ctx.fillStyle = "green";
-  ctx.fillText("HP: " + f.health, x - 40, y -30);
   
   // Figure number
   ctx.font = "20px Arial";
@@ -205,34 +305,24 @@ function drawStickFigure(f) {
     ctx.lineTo(x, y + 80);
     ctx.stroke();
   }
-
+  //arm
   // Left Arm
   if (f.showLeftArm) {
     ctx.beginPath();
     ctx.moveTo(x, y + 40);
     ctx.lineTo(x - 30, y + 60);
-    ctx.stroke();
-  }
-
-  // Right Arm
-  if (f.showRightArm) {
-    ctx.beginPath();
+  //Right arm
     ctx.moveTo(x, y + 40);
     ctx.lineTo(x + 30, y + 60);
     ctx.stroke();
   }
-
+  //leg
   // Left Leg
   if (f.showLeftLeg) {
     ctx.beginPath();
     ctx.moveTo(x, y + 80);
     ctx.lineTo(x - 25, y + 120);
-    ctx.stroke();
-  }
-
-  // Right Leg
-  if (f.showRightLeg) {
-    ctx.beginPath();
+  //Right Leg
     ctx.moveTo(x, y + 80);
     ctx.lineTo(x + 25, y + 120);
     ctx.stroke();
@@ -243,11 +333,10 @@ function drawStickFigure(f) {
    ctx.beginPath();
 
    // gun handle
-   ctx.moveTo(x + 30, y + 60);
-   ctx.lineTo(x + 50, y + 60);
-
+   ctx.moveTo(x + 30, y + 70);
+   ctx.lineTo(x + 30, y + 50);
    // gun barrel
-   ctx.lineTo(x + 60, y + 50);
+   ctx.lineTo(x + 50, y + 50);
    ctx.stroke();
    }
 
@@ -259,30 +348,6 @@ function drawStickFigure(f) {
    ctx.arc(x - 45, y + 60, 15, 0, Math.PI * 2);
 
    ctx.stroke();
-  }
-  // Shield HP
-  if(f.showShield) {
-
-   ctx.font = "14px Arial";
-   ctx.fillStyle = "blue";
-
-   ctx.fillText(
-    "Shield: " + f.shieldHealth,
-    x - 40,
-    y - 50
-   );
-  }
-  // Ammo text
-  if(f.showGun) {
-
-   ctx.font = "14px Arial";
-   ctx.fillStyle = "brown";
-
-   ctx.fillText(
-     "Ammo: " + f.magazine,
-     x - 30,
-     y - 65
-   );
   }
 }
 // ---------------- PAGE TURN ----------------
@@ -350,20 +415,6 @@ function drawSelectedFigureCard() {
     cardFigure.showRightArm &&
     cardFigure.showLeftLeg &&
     cardFigure.showRightLeg;
-  if(fullBodyComplete){
-
-    // Options
-    if (cardFigure.showGun) {
-
-     option1 = "Press S for Shield";
-     option2 = "Press M for Magazine";
-
-    } else {
-
-     option1 = "Press G for Gun";
-     option2 = "Press S for Shield";
-   }
-  }
 
   // White Box
   ctx.fillStyle = "white";
@@ -379,11 +430,9 @@ function drawSelectedFigureCard() {
   ctx.font = "40px Arial";
   ctx.textAlign = "center";
 
-  ctx.fillText(
-    "Selected figure: " + cardFigure.number,
-    400,
-    340
-  );
+  ctx.fillText("next Figure.NO:",400,340);
+  ctx.fillText(cardFigure.number,400,380);
+
 
   // Options inside box
   ctx.fillStyle = "black";
@@ -434,7 +483,6 @@ function shoot(fromFigure, targetX, targetY) {
   });
 }
 
-
 function moveBullet() {
 
   for(let i = bullets.length - 1; i >= 0; i--) {
@@ -463,20 +511,13 @@ function moveBullet() {
 
       let targetX = enemy.x;
       let targetY = enemy.y + 50;
-
-      // shield position
-      if(enemy.showShield) {
-        targetX = enemy.x - 45;
-        targetY = enemy.y + 60;
-      }
-
       let dx = b.x - targetX;
       let dy = b.y - targetY;
 
       let distance = Math.sqrt(dx * dx + dy * dy);
 
       // Bullet hit
-      if(distance < 15) {
+      if(distance < 20) {
 
         // shield protection 
         if(enemy.showShield) {
@@ -488,14 +529,21 @@ function moveBullet() {
 
              enemy.showShield = false;
              enemy.shieldHealth = 0;
-          }
-        }else {
+            }
+          }else{
 
           //normal damsge
           enemy.health -= 25;
+          enemy.health = Math.max(enemy.health, 0);
 
+          if(enemy.health === 0) {
+
+            deadFigureMessage = true;
+            deadFigureNumber = enemy.number;
+
+            checkGameOver();
+          }
         }
-
 
         // Health minimum = 0
         enemy.health = Math.max(enemy.health, 0);
@@ -512,15 +560,11 @@ function moveBullet() {
 
         // REMOVE bullet immediately
         bullets.splice(i, 1);
-
         bulletRemoved = true;
-
         // STOP attacking other enemies
         break;
       }
     }
-
-    // IMPORTANT
     // If bullet already removed,
     // skip remaining code
     if(bulletRemoved) {
@@ -583,6 +627,27 @@ function update() {
 
     ctx.fill();
   });
+  if(selectedInfo && Date.now() - infoTimer < 3000){
+
+    let boxX = selectedInfo.x - 80;
+    let boxY = selectedInfo.y + 140;
+
+    ctx.fillStyle = "transparent";
+    ctx.fillRect(boxX, boxY, 160, 90);
+
+    ctx.strokeStyle = "black";
+    ctx.strokeRect(boxX, boxY, 160, 90);
+
+    ctx.fillStyle = "black";
+    ctx.font = "14px Arial";
+
+    ctx.fillText("HP: " + selectedInfo.health, boxX + 10, boxY + 25);
+    ctx.fillText("Shield: " + selectedInfo.shieldHealth, boxX + 10, boxY + 45);
+    ctx.fillText("Ammo: " + selectedInfo.magazine, boxX + 10, boxY + 65);
+
+  } else {
+    selectedInfo = null;
+  }
 }
 function checkGameOver() {
 
@@ -650,12 +715,8 @@ function addRandomPart() {
       Math.floor(Math.random() * aliveFigures.length)
     ];
 
-    let cardFigureNumber = "";
   // SET selected figure ONLY ONCE
   cardFigure = randomFigure;
-
-  cardFigureNumber = randomFigure.number;
-
   pageTurn = 0;
   flipping = true;
 
@@ -695,19 +756,31 @@ function addRandomPart() {
      // Options only after full body
     if(fullBodyComplete) {
 
-      waitingForChoice = true;
+      // Figure has no gun and no shield
+      if(!randomFigure.showGun && !randomFigure.showShield) {
 
-    } else {
+        rewardBtn.textContent = "Get Gun";
+        shieldBtn.textContent = "Get Shield";
 
-      waitingForChoice = false;
+        waitingForChoice = true;
+        showRewardButton();
+      }
 
-      option1 = "";
-      option2 = "";
+      // Figure already has gun but no bullets
+      else if(randomFigure.showGun || randomFigure.showShield)  {
+
+        rewardBtn.textContent = "Get Magazine";
+        shieldBtn.textContent = "Get Shield";
+
+        waitingForChoice = true;
+        showRewardButton();
+      }
+
+      else {
+          waitingForChoice = false;
+      }
     }
 }
-
-
-
 
 function gameLoop() {
 
@@ -742,58 +815,4 @@ document.addEventListener("keydown", function(e){
 
     addRandomPart();
   }
-
-  
-// G key
-if(e.code === "KeyG" && gameStarted && !gameOver) {
-
-  if(cardFigure && waitingForChoice) {
-
-    if(!cardFigure.showGun) {
-
-      cardFigure.showGun = true;
-
-      cardFigure.magazine = 0;
-
-      waitingForChoice = false;
-
-      
-
-      cardVisible = false;
-    }
-  }
-}
-
-// S key
-if(e.code === "KeyS" && gameStarted && !gameOver) {
-
-  if(cardFigure && waitingForChoice) {
-
-    cardFigure.showShield = true;
-
-    cardFigure.shieldHealth += 50;
-
-    waitingForChoice = false;
-
-    
-
-    cardVisible = false;
-  }
-}
-// M key
-if(e.code === "KeyM" && gameStarted && !gameOver) {
-
-  if(cardFigure && waitingForChoice) {
-
-    if(cardFigure.showGun) {
-
-      // add 2 bullets every time
-      cardFigure.magazine += 2;
-
-      waitingForChoice = false;
-
-      cardVisible = false;
-    }
-  }
-}
 });
