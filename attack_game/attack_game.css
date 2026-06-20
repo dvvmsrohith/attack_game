@@ -84,6 +84,44 @@ button{
     box-shadow:
         0 0 15px rgba(239,68,68,0.7);
 }
+#rewardBtn,
+#shieldBtn{
+    position: static;   /* remove absolute/fixed positioning */
+    
+    display:inline-block;
+    width:120px;
+
+    margin:10px;
+
+    color:black;
+    background-color:red;
+
+    padding:15px 20px;
+    font-size:18px;
+}
+
+#gunPopup{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:white;
+    border:2px solid black;
+    padding:20px;
+    width:350px;
+    height: 150px;
+    text-align:center;
+    z-index:10000;
+}
+
+#closePopup{
+    position:absolute;
+    top:5px;
+    right:10px;
+    font-size:24px;
+    font-weight:bold;
+    cursor:pointer;
+}
 
 /* Hover Effect */
 button:hover{
